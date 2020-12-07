@@ -27,16 +27,45 @@ There are two phases of the exercises for ths project.
 * Write an SQL script with queries that answer the following questions:
 * 1. Which actors have the first name ‘Scarlett’
 * 2. Which actors have the last name ‘Johansson’
-* 3. How many distinct actors last names are there?
-* 4. Which last names are not repeated?
+	select * from actor
+	where last_name = "Johansson";
+* 3. How many distinct actors last names are there? 121
+	select last_name, count(last_name) from actor
+	GROUP BY last_name;
+* 4. Which last names are not repeated? 66
+	select last_name from actor GROUP BY last_name having count(last_name) = 1
 * 5. Which last names appear more than once?
+	select last_name from actor GROUP BY last_name having count(last_name) > 1
 * 6. Which actor has appeared in the most films?
+	select actor.actor_id, actor.first_name, actor.last_name,
+       count(actor_id) as film_count
+	from actor join film_actor using (actor_id)
+	group by actor_id
+	order by film_count desc
+	limit 1;
 * 7. Is ‘Academy Dinosaur’ available for rent from Store 1?
+	select *
+	from inventory
+	join film using(film_id)
+	where store_id = 1 and title like 'ACADEMY DINOSAUR';
 * 8. Insert a record to represent Mary Smith renting ‘Academy Dinosaur’ from Mike Hillyer at Store 1 today .
+	insert into rental (rental_date, inventory_id, customer_id, staff_id)
+	values (NOW(), 1, 1, 1);
 * 9. When is ‘Academy Dinosaur’ due?
+	select rental_date,
+       rental_date + interval
+                   (select rental_duration from film where film_id = 1) day
+                   as due_date
+	from rental
+	where rental_id = (select rental_id from rental order by rental_id desc limit 1);
 * 10. What is that average running time of all the films in the sakila DB?
+	select avg(length) from film;
 * 11. What is the average running time of films by category?
-* 12. Why does this query return the empty set? 
+	select category.name, avg(length) from film
+	join film_category on (film.film_id = film_category.film_id)
+	join category using (category_id)
+	group by (category.name);
+* 12. Why does this query return the empty set? Film.film_is is small int type and inventory.film_id is a medium type
 
 `select * from film natural join inventory;`
 
@@ -47,16 +76,26 @@ The solutions to these are in [sakila-queries-answers.sql](doc/sakila-queries-an
 Use google as lightly as possible in solving these. These are the kind of queries that any data engineer should be able to perform on a familiar dataset.
 
 * 1a. Display the first and last names of all actors from the table `actor`. 
+	select first_name, last_name from actor;
 
 * 1b. Display the first and last name of each actor in a single column in upper case letters. Name the column `Actor Name`. 
+	select concat(Upper(first_name), " " ,(last_name)) as "Actor Name" from actor;
 
 * 2a. You need to find the ID number, first name, and last name of an actor, of whom you know only the first name, "Joe." What is one query would you use to obtain this information?
-  	
+  	select actor_id, first_name, last_name from actor
+	where first_name like 'Joe';
 * 2b. Find all actors whose last name contain the letters `GEN`:
+	select actor_id, first_name, last_name from actor
+	where last_name like '%GEN%';
   	
 * 2c. Find all actors whose last names contain the letters `LI`. This time, order the rows by last name and first name, in that order:
+	select actor_id, first_name, last_name from actor
+	where last_name like '%LI%'
+	order by last_name, first_name desc;
 
 * 2d. Using `IN`, display the `country_id` and `country` columns of the following countries: Afghanistan, Bangladesh, and China:
+	select country_id, country from country
+	where country in ('Afghanistan', 'Bangladesh', 'China');
 
 * 3a. Add a `middle_name` column to the table `actor`. Position it between `first_name` and `last_name`. Hint: you will need to specify the data type.
   	
