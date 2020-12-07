@@ -118,6 +118,12 @@ Use google as lightly as possible in solving these. These are the kind of querie
 	join  film_actor using (film_id)
 	join actor using (actor_id)
 	where title = 'Alone Trip';
+	
+	with subqueries
+	select first_name, last_name
+	from actor 
+	join film_actor using(actor_id) 
+	where film_id = (select film_id from film where title = ‘alone trip’);
    
 * 7c. You want to run an email marketing campaign in Canada, for which you will need the names and email addresses of all Canadian customers. Use joins to retrieve this information.
 	select first_name, last_name, email from customer
